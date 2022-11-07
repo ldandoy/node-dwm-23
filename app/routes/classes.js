@@ -20,12 +20,31 @@ router.post('/', (request, response) => {
 
 router.get('/', (request, response) => {
     response.status(200).json(classes);
-})
+});
 
 router.get('/:id', (request, response) => {
-    const {id} = request.params
+    const {id} = request.params;
 
-    let classe = ;
+    let classe = classes.find(item => item.id === id);
+
+    response.status(200).json(classe);
+});
+
+router.delete('/:id', (request, response) => {
+    const {id} = request.params;
+
+    classes = classes.filter(object => { return object.id !== id; });
+
+    response.status(200).json(classes);
+});
+
+router.put('/:id', (request, response) => {
+    const {id} = request.params;
+    const {name} = request.body;
+
+    let classe = classes.find(item => item.id === id);
+
+    classe.name = name;
 
     response.status(200).json(classe);
 })

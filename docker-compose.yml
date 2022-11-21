@@ -10,6 +10,9 @@ services:
       - 4500:4500
     volumes:
       - ./app:/app
+      - /app/node_modules
+    environment:
+      MONGO_URL: mongodb://root:root@mongo:27017/dwm?authSource=admin
 
   mongo:
     image: mongo

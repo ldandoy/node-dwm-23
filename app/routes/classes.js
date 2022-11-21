@@ -1,21 +1,25 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
+const classeModel = require('../models/classe');
 
 let router = express.Router();
 
 let classes = [];
 
-router.post('/', (request, response) => {
+router.post('/', async (request, response) => {
     const {name} = request.body;
 
-    let classe = {
-        id: uuidv4(),
-        name
-    };
-
-
-    classes.push(classe);
-    response.status(200).json(classe);
+    try {
+        let classe = await classeModel.create({
+            name
+        });
+        
+        return response.status(200).json(classe);
+    } catch(error) {
+        return response.status(500).json({
+            msg: error
+        });
+    }
 });
 
 router.get('/', (request, response) => {

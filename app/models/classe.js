@@ -5,7 +5,9 @@ const classeSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true
-    }
+    },
+    students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
+    lessons: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Lesson' }]
 }, {
     timestamps: {
         createdAt: 'created_at',

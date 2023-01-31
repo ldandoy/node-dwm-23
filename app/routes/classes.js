@@ -1,17 +1,22 @@
 const express = require('express');
-const { v4: uuidv4 } = require('uuid');
+
 const classeModel = require('../models/classe');
+const studentModel = require('../models/student');
 
 let router = express.Router();
 
-let classes = [];
-
 router.post('/', async (request, response) => {
-    const {name} = request.body;
+    const {label} = request.body;
+
+    if (typeof label == "undefined" || label == "") {
+        return response.status(500).json({
+            msg: "Vous devez donner un nom à votre classe !"
+        });
+    }
 
     try {
         let classe = await classeModel.create({
-            name
+            label
         });
         
         return response.status(200).json(classe);
@@ -22,35 +27,99 @@ router.post('/', async (request, response) => {
     }
 });
 
-router.get('/', (request, response) => {
-    response.status(200).json(classes);
+router.post('/add-student', async (request, response) => {
+    const {studentId, classeId} = request.body;
+
+    try {
+        const classe = await classeModel.findOneAndUpdate({
+            _id: classeId
+        }, {
+            "$push": { "students": studentId }
+        },{
+            new: true
+        }).populate('students');
+
+        await studentModel.findOneAndUpdate({
+            _id: studentId
+        }, {
+            classe: classe
+        });
+
+        return response.status(200).json(classe);
+    } catch(error) {
+        return response.status(500).json({
+            msg: error
+        });
+    }
 });
 
-router.get('/:id', (request, response) => {
+router.get('/', async (request, response) => {
+    try {
+        classes = await classeModel.find()
+            .populate({ path: 'students', select: '-password' })
+            .populate({ path: 'lessons'});
+
+        return response.status(200).json(classes);
+    } catch(error) {
+        return response.status(500).json({
+            msg: error
+        });
+    }
+});
+
+router.get('/:id', async (request, response) => {
     const {id} = request.params;
 
-    let classe = classes.find(item => item.id === id);
+    try {
+        let classe = await classeModel.findOne({
+            _id: id
+        });
 
-    response.status(200).json(classe);
+        response.status(200).json(classe);
+    } catch(error) {
+        return response.status(500).json({
+            msg: error
+        });
+    }
 });
 
-router.delete('/:id', (request, response) => {
+router.delete('/:id', async (request, response) => {
     const {id} = request.params;
 
-    classes = classes.filter(object => { return object.id !== id; });
+    try {
+        await classeModel.findOneAndDelete({
+            _id: id
+        });
 
-    response.status(200).json(classes);
+        response.status(200).json({
+            msg: "Classe bien supprimée !"
+        });
+    } catch(error) {
+        return response.status(500).json({
+            msg: error
+        });
+    }
 });
 
-router.put('/:id', (request, response) => {
+router.put('/:id', async (request, response) => {
     const {id} = request.params;
     const {name} = request.body;
 
-    let classe = classes.find(item => item.id === id);
+    try {
+        let classe = await classeModel.findOneAndUpdate({
+            _id: id
+        }, {
+            name
+        }, {
+            new: true
+        });
 
-    classe.name = name;
-
-    response.status(200).json(classe);
-})
+        response.status(200).json(classe);
+    } catch(error) {
+        return response.status(500).json({
+            msg: error
+        });
+    }
+});
 
 module.exports = router;

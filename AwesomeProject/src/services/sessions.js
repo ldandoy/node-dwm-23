@@ -5,8 +5,10 @@ export const getSessions = async () => {
         const res = await axios.get(
             'http://192.168.1.25:4500/classes'
         );
+        console.log('getSessions', res.status);
         return res.data;
     } catch (error) {
-        console.log(error);
+        console.log('error', error)
+        return error.response;
     }
 };
